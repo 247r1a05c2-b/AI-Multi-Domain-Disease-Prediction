@@ -1,0 +1,45 @@
+# BioVision AI — Python Dependencies
+# Install with:  pip install -r requirements.txt
+#
+# Python 3.9, 3.10, or 3.11 recommended.
+# TensorFlow does NOT support Python 3.12 yet.
+
+# ── Core UI ──────────────────────────────────────────────────────────────────
+streamlit>=1.20.0
+
+# ── Deep Learning ─────────────────────────────────────────────────────────────
+# If you have a GPU:  pip install tensorflow[and-cuda]==2.13.0
+# CPU only (safer):
+tensorflow-cpu>=2.10.0,<2.16.0
+
+# ── Computer Vision ───────────────────────────────────────────────────────────
+opencv-python>=4.5.0
+Pillow>=9.0.0
+
+# ── Data & Numbers ────────────────────────────────────────────────────────────
+numpy>=1.23.0,<2.0.0
+pandas>=1.5.0
+scikit-learn>=1.1.0
+
+# ── Visualisation ─────────────────────────────────────────────────────────────
+matplotlib>=3.5.0
+plotly>=5.10.0
+seaborn>=0.12.0
+
+# ── PDF Reports ───────────────────────────────────────────────────────────────
+reportlab>=3.6.0
+
+# ── Voice Assistant ───────────────────────────────────────────────────────────
+pyttsx3>=2.90
+
+# ── Utilities ────────────────────────────────────────────────────────────────
+tqdm>=4.60.0
+scipy>=1.9.0
+
+# ── Optional: YOLO object detection ──────────────────────────────────────────
+# Uncomment if you want YOLOv8 localization (requires PyTorch ~2 GB download):
+# ultralytics>=8.0.0
+
+# ── Optional: Speech recognition ─────────────────────────────────────────────
+# SpeechRecognition>=3.10.0
+# pyaudio>=0.2.13       # Install via: conda install -c conda-forge pyaudio
