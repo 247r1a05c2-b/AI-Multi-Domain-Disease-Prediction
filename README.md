@@ -187,6 +187,8 @@ pip install reportlab
 5. Restart the app — it loads the new model automatically.
 
 ---
+🚀 Live Demo: https://ai-multi-domain-disease-1st.streamlit.app/
+
 
 ## 📜 Disclaimer
 
