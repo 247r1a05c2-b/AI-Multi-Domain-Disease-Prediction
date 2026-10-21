@@ -53,6 +53,7 @@ def build_model(num_classes):
 def train():
     import tensorflow as tf
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
     from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
     from sklearn.metrics import classification_report, confusion_matrix
     from utils.charts import confusion_matrix_png, training_history_png
@@ -60,24 +61,24 @@ def train():
     logger.info("=== BioVision AI — Animal Disease Model Training ===")
 
     if not os.path.isdir(DATASET_DIR):
-        logger.error(f"Dataset not found: {DATASET_DIR}. Run setup_datasets.py first.")
-        return
+        logger.error(f"Real dataset not found: {DATASET_DIR}. Run training/prepare_real_datasets.py first.")
+        raise SystemExit(1)
 
     classes = sorted([d for d in os.listdir(DATASET_DIR) if os.path.isdir(os.path.join(DATASET_DIR, d))])
     if not classes:
         logger.error("No class directories found.")
-        return
+        raise SystemExit(1)
     logger.info(f"Classes: {classes}")
 
     train_gen = ImageDataGenerator(
-        rescale=1.0 / 255,
+        preprocessing_function=preprocess_input,
         rotation_range=25,
         horizontal_flip=True,
         zoom_range=0.2,
         brightness_range=[0.75, 1.25],
         validation_split=0.2,
     )
-    val_gen = ImageDataGenerator(rescale=1.0 / 255, validation_split=0.2)
+    val_gen = ImageDataGenerator(preprocessing_function=preprocess_input, validation_split=0.2)
 
     train_data = train_gen.flow_from_directory(
         DATASET_DIR, target_size=IMAGE_SIZE, batch_size=BATCH_SIZE,
