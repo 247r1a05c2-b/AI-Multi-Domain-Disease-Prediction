@@ -86,6 +86,7 @@ def fine_tune_model(model, base_model, num_unfreeze: int = 30):
 def train():
     import tensorflow as tf
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
     from tensorflow.keras.callbacks import (
         EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, TensorBoard
     )
@@ -97,8 +98,8 @@ def train():
     # ── Verify dataset ──────────────────────────────────────────────────────
     if not os.path.isdir(DATASET_DIR):
         logger.error(f"Dataset not found at: {DATASET_DIR}")
-        logger.error("Please run setup_datasets.py first or place images manually.")
-        return
+        logger.error("Real dataset not found. Run training/prepare_real_datasets.py first.")
+        raise SystemExit(1)
 
     classes = sorted([
         d for d in os.listdir(DATASET_DIR)
@@ -106,13 +107,13 @@ def train():
     ])
     if not classes:
         logger.error("No class subdirectories found in dataset.")
-        return
+        raise SystemExit(1)
 
     logger.info(f"Found {len(classes)} classes: {classes}")
 
     # ── Data generators ─────────────────────────────────────────────────────
     train_gen = ImageDataGenerator(
-        rescale=1.0 / 255,
+        preprocessing_function=preprocess_input,
         rotation_range=30,
         width_shift_range=0.15,
         height_shift_range=0.15,
@@ -121,7 +122,7 @@ def train():
         brightness_range=[0.7, 1.3],
         validation_split=0.2,
     )
-    val_gen = ImageDataGenerator(rescale=1.0 / 255, validation_split=0.2)
+    val_gen = ImageDataGenerator(preprocessing_function=preprocess_input, validation_split=0.2)
 
     train_data = train_gen.flow_from_directory(
         DATASET_DIR,
