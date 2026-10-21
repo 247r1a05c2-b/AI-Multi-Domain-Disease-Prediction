@@ -9,7 +9,7 @@ A fully local, open-source AI platform for detecting diseases in **plants**, **h
 - **Python 3.9–3.11** (Python 3.10 recommended)
 - **Anaconda** or **Miniconda**
 - **Webcam** (optional — upload mode works without it)
-- No internet or paid API keys required
+- Internet is required once to download datasets and ImageNet transfer-learning weights; inference can run locally afterward
 
 ---
 
@@ -31,24 +31,32 @@ pip install -r requirements.txt
 > **Note:** TensorFlow installation may take a few minutes.
 > If you have a GPU, TensorFlow will use it automatically.
 
-### Step 3 — Generate sample datasets
+### Step 3 — Configure Kaggle and download real images
+
+Install the Kaggle CLI and configure your Kaggle API token (Kaggle account → Settings → API). Keep the token private; never commit it.
 
 ```bash
-python setup_datasets.py
+pip install kaggle
+python training/prepare_real_datasets.py --domains plant
 ```
 
-This creates synthetic placeholder images in `datasets/` so the app can run immediately.
-**For accurate predictions**, replace these with real disease images.
+If you previously generated synthetic demo images or already have images in that dataset folder, the script stops rather than mixing them with real images. Use `--replace-existing` only if you intentionally want to replace the existing dataset.
 
-### Step 4 — (Optional) Train models
+This downloads the PlantVillage image dataset from Kaggle and organizes real images under `datasets/plants/<class>/`. To prepare all three domains, use `--domains plant human animal`; this downloads substantially more data. The human option prepares HAM10000 skin-lesion labels (7 categories), which is licensed for non-commercial use. Check each dataset's current license and terms before use.
+
+### Step 4 — Train the selected model
 
 ```bash
 python training/train_plants.py
-python training/train_humans.py
-python training/train_animals.py
 ```
 
-Without a successfully loaded trained model, the app shows an explicit non-diagnostic `DEMO_MODE_NO_TRAINED_MODEL` marker with 0% confidence. It does **not** fabricate disease labels. Demo-mode outputs must never be used for health decisions.
+Or prepare and train the plant model in one command:
+
+```bash
+python training/prepare_real_datasets.py --domains plant --train
+```
+
+The trained model and class map are saved under `saved_models/`. Human and animal training scripts are available too, but only train them after reviewing their source labels, licenses, and class balance. No model weights are bundled in this repository yet; the script downloads real datasets and trains weights in your environment. Without a successfully loaded trained model, the app shows a non-diagnostic unavailable message instead of inventing a disease label.
 
 ### Step 5 — Launch the app
 
@@ -65,7 +73,7 @@ Open **http://localhost:8501** in your browser.
 ```
 BioVisionAI/
 ├── app.py                    ← Main Streamlit application
-├── setup_datasets.py         ← Dataset generator (run first)
+├── setup_datasets.py         ← Synthetic demo images only (explicit opt-in)
 ├── requirements.txt          ← Python dependencies
 ├── README.md
 │
@@ -121,9 +129,9 @@ BioVisionAI/
 
 | Domain  | Classes |
 |---------|---------|
-| Plants  | Tomato Blight, Powdery Mildew, Rust, Healthy |
-| Humans  | Dermatitis, Psoriasis, Acne, Healthy |
-| Animals | Skin Infection, Mange, Ringworm, Healthy |
+| Plants  | Classes found in the downloaded PlantVillage dataset (up to 38 disease/healthy categories) |
+| Humans  | HAM10000 skin-lesion labels: akiec, bcc, bkl, df, mel, nv, vasc |
+| Animals | Classes supplied by the selected animal dataset; inspect its labels before training |
 
 ---
 
@@ -178,13 +186,13 @@ pip install reportlab
 
 ---
 
-## 🔧 Training on Real Data
+## 🔧 Real dataset sources
 
-1. Download a public disease dataset (e.g. PlantVillage from Kaggle).
-2. Organise into `datasets/plants/<ClassName>/` folders.
-3. Run `python training/train_plants.py`.
-4. The trained model is saved to `saved_models/plant_model.h5`.
-5. Restart the app — it loads the new model automatically.
+- Plant disease: [PlantVillage on Kaggle](https://www.kaggle.com/datasets/emmarex/plantdisease)
+- Human skin lesions: [HAM10000 on Kaggle](https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000) — non-commercial license; not a diagnostic model.
+- Animal disease: [Animal Disease Dataset on Kaggle](https://www.kaggle.com/datasets/muzammilwaseem/animal-disease-dataset) — verify the current dataset license and label definitions.
+
+The preparation script never treats generated demo images as real training evidence. `setup_datasets.py` is only for UI demonstrations and must not be used to train a disease classifier. For model evaluation and health-safety limitations, see `MODEL_EVALUATION.md`.
 
 ---
 
