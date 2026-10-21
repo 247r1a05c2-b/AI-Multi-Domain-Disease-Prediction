@@ -23,7 +23,7 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 SOURCES = {
     "plant": "emmarex/plantdisease",
     "human": "kmader/skin-cancer-mnist-ham10000",
-    "animal": "muzammilwaseem/animal-disease-dataset",
+    "animal": "maryam18/animal-disease-classification",
 }
 
 
