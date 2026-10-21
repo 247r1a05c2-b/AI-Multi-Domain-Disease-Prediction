@@ -327,14 +327,22 @@ elif page == "🔍 Predict":
                         else:
                             # ── Prediction ────────────────────────────────
                             try:
-                                results   = predict(category, arr)
-                                top_label = results[0][0].replace("_", " ")
-                                top_conf  = results[0][1]
+                                results = predict(category, arr)
                             except Exception as e:
-                                st.error(f"Prediction error: {e}")
-                                results   = [("Unknown", 1.0)]
-                                top_label = "Unknown"
-                                top_conf  = 1.0
+                                st.error(f"Prediction is unavailable because the model failed: {e}")
+                                st.info("Check that a trained model exists and matches this category. No diagnosis was generated.")
+                                st.stop()
+
+                            if not results or results[0][0] in {
+                                "DEMO_MODE_NO_TRAINED_MODEL",
+                                "PREDICTION_UNAVAILABLE_CHECK_MODEL",
+                            }:
+                                st.error("Prediction is unavailable: no usable trained model was found for this category.")
+                                st.info("Add and validate the trained model before using this feature. The uploaded image was not diagnosed.")
+                                st.stop()
+
+                            top_label = results[0][0].replace("_", " ")
+                            top_conf = results[0][1]
 
                             # ── Severity ──────────────────────────────────
                             try:
