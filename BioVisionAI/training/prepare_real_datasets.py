@@ -132,9 +132,20 @@ def prepare_ham10000(source_root: Path, destination_root: Path) -> int:
     return copied
 
 
-def prepare_domain(domain: str) -> int:
+def prepare_domain(domain: str, replace_existing: bool = False) -> int:
     extracted = download_and_extract(domain)
     destination = DATASETS_DIR / {"plant": "plants", "human": "humans", "animal": "animals"}[domain]
+    has_existing_images = destination.exists() and any(
+        path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
+        for path in destination.rglob("*")
+    )
+    if has_existing_images and not replace_existing:
+        raise RuntimeError(
+            f"{destination} already contains images. To avoid mixing synthetic/demo or older "
+            "data with the new source, move that folder away or rerun with --replace-existing."
+        )
+    if has_existing_images and replace_existing:
+        shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
 
     if domain == "human":
@@ -161,11 +172,15 @@ def main() -> int:
         "--train", action="store_true",
         help="Train the selected model(s) after preparing the datasets.",
     )
+    parser.add_argument(
+        "--replace-existing", action="store_true",
+        help="Replace existing images in selected dataset folders; use only if you intend to discard them.",
+    )
     args = parser.parse_args()
 
     for domain in args.domains:
         try:
-            prepare_domain(domain)
+            prepare_domain(domain, replace_existing=args.replace_existing)
         except (RuntimeError, subprocess.CalledProcessError) as exc:
             print(f"ERROR preparing {domain}: {exc}", file=sys.stderr)
             return 1
