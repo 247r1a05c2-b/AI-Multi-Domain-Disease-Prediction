@@ -288,8 +288,8 @@ elif page == "🔍 Predict":
     st.title(f"🔍 Disease Prediction — {category.capitalize()}")
     if not model_exists(category):
         st.warning(
-            "No trained model is available for this category. Demo output is "
-            "non-diagnostic and must not be used to make health decisions."
+            "No usable trained model is available for this category. "
+            "The app will show predictions only after a trained model loads successfully."
         )
 
     tab_upload, tab_camera = st.tabs(["📁 Upload Image", "📷 Capture from Camera"])
@@ -610,17 +610,37 @@ elif page == "📷 Live Camera":
                         pil_frame = Image.fromarray(rgb_frame)
                         arr       = preprocess_image(pil_frame)
                         if arr is not None:
-                            res          = predict(category, arr)
-                            last_label   = res[0][0].replace("_"," ")
-                            last_conf    = res[0][1]
-                            sd           = analyze_severity(pil_frame)
-                            last_severity= sd["severity"]
+                            res = predict(category, arr)
+                            unavailable_markers = {
+                                "DEMO_MODE_NO_TRAINED_MODEL",
+                                "PREDICTION_UNAVAILABLE_CHECK_MODEL",
+                            }
+                            if not res or res[0][0] in unavailable_markers:
+                                last_label = (
+                                    "No trained model"
+                                    if res and res[0][0] == "DEMO_MODE_NO_TRAINED_MODEL"
+                                    else "Model unavailable"
+                                )
+                                last_conf = 0.0
+                                last_severity = "N/A"
+                            else:
+                                last_label = res[0][0].replace("_", " ")
+                                last_conf = res[0][1]
+                                sd = analyze_severity(pil_frame)
+                                last_severity = sd["severity"]
                     except Exception:
-                        pass
+                        last_label = "Model unavailable"
+                        last_conf = 0.0
+                        last_severity = "N/A"
 
                 colour_map = {"LOW":(0,255,0),"MEDIUM":(0,165,255),"HIGH":(0,0,255)}
                 colour = colour_map.get(last_severity, (255,255,255))
-                cv2.putText(frame, f"{last_label} ({last_conf*100:.0f}%) [{last_severity}]",
+                overlay = (
+                    f"{last_label} ({last_conf*100:.0f}%) [{last_severity}]"
+                    if last_conf > 0
+                    else last_label
+                )
+                cv2.putText(frame, overlay,
                             (10,35), cv2.FONT_HERSHEY_SIMPLEX, 0.8, colour, 2, cv2.LINE_AA)
                 fps = 1.0 / max(time.time() - t0, 0.001)
                 cv2.putText(frame, f"FPS: {fps:.1f}", (10,65),
