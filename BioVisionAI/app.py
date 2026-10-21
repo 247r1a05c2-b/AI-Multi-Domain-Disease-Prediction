@@ -505,7 +505,7 @@ elif page == "🔍 Predict":
 
                 with st.spinner("Analysing..."):
                     arr      = preprocess_image(pil_img)
-                    results  = predict(category, arr) if arr is not None else [("Unknown",1.0)]
+                    results  = predict(category, arr) if arr is not None else [("PREDICTION_UNAVAILABLE_CHECK_IMAGE",0.0)]
                     top_label= results[0][0].replace("_"," ")
                     top_conf = results[0][1]
 
