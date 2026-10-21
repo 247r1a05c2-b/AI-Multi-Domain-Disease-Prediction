@@ -1,13 +1,9 @@
 """
-BioVision AI — Dataset Setup Script
-Generates synthetic placeholder images for each disease class so the app
-and training scripts can run immediately without real image data.
+BioVision AI — Synthetic demo image generator.
 
-Run this ONCE before training:
-    python setup_datasets.py
-
-After running, replace the generated images with real disease images for
-accurate predictions.
+This utility creates artificial placeholder graphics for UI testing only.
+Never use its output to train or evaluate a disease classifier. For real
+Kaggle images, use training/prepare_real_datasets.py instead.
 """
 
 import os
@@ -147,7 +143,19 @@ def print_dataset_stats():
 
 
 if __name__ == "__main__":
-    logger.info("=== BioVision AI — Dataset Setup ===")
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate synthetic UI-demo images only.")
+    parser.add_argument(
+        "--synthetic-demo",
+        action="store_true",
+        help="Explicitly opt in to generating artificial placeholder images (never for training).",
+    )
+    args = parser.parse_args()
+    if not args.synthetic_demo:
+        logger.error("No real data was generated. Use training/prepare_real_datasets.py for Kaggle images.")
+        logger.error("To create artificial UI placeholders only, rerun with --synthetic-demo.")
+        raise SystemExit(2)
+    logger.warning("Generating SYNTHETIC demo images. Do not use these for model training or evaluation.")
     create_datasets()
     print_dataset_stats()
-    logger.info("\nDone! You can now run training scripts or launch the Streamlit app.")
