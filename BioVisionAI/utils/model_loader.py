@@ -68,7 +68,7 @@ def get_model(category: str):
 
     model_path = os.path.join(MODELS_DIR, f"{category}_model.h5")
     if not os.path.exists(model_path):
-        logger.warning(f"No trained model found for '{category}'. Using demo predictor.")
+        logger.warning(f"No trained model found for '{category}'. Predictions are disabled until one is available.")
         _model_cache[category] = (None, {i: c for i, c in enumerate(DEFAULT_CLASSES.get(category, []))})
         return _model_cache[category]
 
@@ -121,6 +121,6 @@ def clear_cache():
 
 
 def model_exists(category: str) -> bool:
-    """Return True if a trained model file exists for the category."""
-    path = os.path.join(MODELS_DIR, f"{category}_model.h5")
-    return os.path.exists(path)
+    """Return True only when a saved model exists and loads successfully."""
+    model, _ = get_model(category)
+    return model is not None
