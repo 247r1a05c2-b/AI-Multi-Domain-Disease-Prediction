@@ -1,0 +1,78 @@
+name: Train BioVision AI model
+
+on:
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "Choose one model to train (run separately for each domain)"
+        required: true
+        type: choice
+        options:
+          - plant
+          - human
+          - animal
+
+permissions:
+  contents: read
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      DOMAIN: ${{ inputs.domain }}
+
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: BioVisionAI/requirements.txt
+
+      - name: Check Kaggle credentials
+        shell: bash
+        run: |
+          if [[ -z "$KAGGLE_USERNAME" || -z "$KAGGLE_KEY" ]]; then
+            echo "::error::Add KAGGLE_USERNAME and KAGGLE_KEY under GitHub repository Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          path = Path.home() / ".kaggle"
+          path.mkdir(mode=0o700, parents=True, exist_ok=True)
+          (path / "kaggle.json").write_text(json.dumps({
+              "username": os.environ["KAGGLE_USERNAME"],
+              "key": os.environ["KAGGLE_KEY"]
+          }))
+          (path / "kaggle.json").chmod(0o600)
+          PY
+
+      - name: Install dependencies
+        working-directory: BioVisionAI
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install kaggle
+
+      - name: Download real dataset and train selected model
+        working-directory: BioVisionAI
+        run: python training/prepare_real_datasets.py --domains "$DOMAIN" --train
+
+      - name: Upload trained model and evaluation charts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: biovision-${{ inputs.domain }}-model
+          path: |
+            BioVisionAI/saved_models/
+            BioVisionAI/assets/*training_history.png
+            BioVisionAI/assets/*confusion_matrix.png
+          if-no-files-found: warn
+          retention-days: 14
