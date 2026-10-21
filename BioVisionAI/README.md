@@ -40,6 +40,8 @@ pip install kaggle
 python training/prepare_real_datasets.py --domains plant
 ```
 
+If you previously generated synthetic demo images or already have images in that dataset folder, the script stops rather than mixing them with real images. Use `--replace-existing` only if you intentionally want to replace the existing dataset.
+
 This downloads the PlantVillage image dataset from Kaggle and organizes real images under `datasets/plants/<class>/`. To prepare all three domains, use `--domains plant human animal`; this downloads substantially more data. The human option prepares HAM10000 skin-lesion labels (7 categories), which is licensed for non-commercial use. Check each dataset's current license and terms before use.
 
 ### Step 4 — Train the selected model
@@ -127,9 +129,9 @@ BioVisionAI/
 
 | Domain  | Classes |
 |---------|---------|
-| Plants  | Tomato Blight, Powdery Mildew, Rust, Healthy |
-| Humans  | Dermatitis, Psoriasis, Acne, Healthy |
-| Animals | Skin Infection, Mange, Ringworm, Healthy |
+| Plants  | Classes found in the downloaded PlantVillage dataset (up to 38 disease/healthy categories) |
+| Humans  | HAM10000 skin-lesion labels: akiec, bcc, bkl, df, mel, nv, vasc |
+| Animals | Classes supplied by the selected animal dataset; inspect its labels before training |
 
 ---
 
