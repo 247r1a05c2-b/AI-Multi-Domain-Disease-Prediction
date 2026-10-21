@@ -97,10 +97,9 @@ def predict(category: str, preprocessed_image: np.ndarray):
         model, class_map = get_model(category)
 
         if model is None:
-            # Demo mode: return random probabilities for UI testing
-            n = len(class_map)
-            raw = np.random.dirichlet(np.ones(n) * 0.5)
-            results = [(class_map[i], float(raw[i])) for i in range(n)]
+            # Never fabricate a disease label or confidence score. This marker is
+            # intentionally non-diagnostic and keeps the UI usable in demo mode.
+            return [("DEMO_MODE_NO_TRAINED_MODEL", 0.0)]
         else:
             preds  = model.predict(preprocessed_image, verbose=0)[0]
             results = [(class_map.get(i, f"Class_{i}"), float(preds[i])) for i in range(len(preds))]
@@ -110,8 +109,8 @@ def predict(category: str, preprocessed_image: np.ndarray):
 
     except Exception as e:
         logger.error(f"Prediction error: {e}")
-        defaults = DEFAULT_CLASSES.get(category, ["Unknown"])
-        return [(defaults[0], 1.0)]
+        # A failed model must not silently become a confident disease diagnosis.
+        return [("PREDICTION_UNAVAILABLE_CHECK_MODEL", 0.0)]
 
 
 def clear_cache():

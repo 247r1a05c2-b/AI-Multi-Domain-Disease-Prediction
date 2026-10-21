@@ -286,6 +286,11 @@ streamlit run app.py""", language="bash")
 # ══════════════════════════════════════════════════════════════════════════════
 elif page == "🔍 Predict":
     st.title(f"🔍 Disease Prediction — {category.capitalize()}")
+    if not model_exists(category):
+        st.warning(
+            "No trained model is available for this category. Demo output is "
+            "non-diagnostic and must not be used to make health decisions."
+        )
 
     tab_upload, tab_camera = st.tabs(["📁 Upload Image", "📷 Capture from Camera"])
 

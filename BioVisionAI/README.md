@@ -48,7 +48,7 @@ python training/train_humans.py
 python training/train_animals.py
 ```
 
-Without trained models, the app runs in **demo mode** with random predictions — all UI features still work.
+Without a successfully loaded trained model, the app shows an explicit non-diagnostic `DEMO_MODE_NO_TRAINED_MODEL` marker with 0% confidence. It does **not** fabricate disease labels. Demo-mode outputs must never be used for health decisions.
 
 ### Step 5 — Launch the app
 
