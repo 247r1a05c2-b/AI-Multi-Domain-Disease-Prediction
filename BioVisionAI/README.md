@@ -73,7 +73,7 @@ Open **http://localhost:8501** in your browser.
 ```
 BioVisionAI/
 ├── app.py                    ← Main Streamlit application
-├── setup_datasets.py         ← Dataset generator (run first)
+├── setup_datasets.py         ← Synthetic demo images only (explicit opt-in)
 ├── requirements.txt          ← Python dependencies
 ├── README.md
 │
