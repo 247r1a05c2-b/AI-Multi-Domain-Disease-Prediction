@@ -44,7 +44,7 @@ def preprocess_image(image_source, target_size=IMAGE_SIZE):
     Load, resize, and normalize an image for model inference.
 
     Returns:
-        NumPy array of shape (1, H, W, 3) with values in [0, 1].
+        NumPy array of shape (1, H, W, 3) normalized to [-1, 1] for MobileNetV2.
     """
     try:
         img = load_image(image_source)
@@ -54,8 +54,9 @@ def preprocess_image(image_source, target_size=IMAGE_SIZE):
         # Resize to target size
         img = img.resize(target_size, Image.LANCZOS)
 
-        # Convert to float32 array and normalize to [0, 1]
-        arr = np.array(img, dtype=np.float32) / 255.0
+        # Match MobileNetV2's preprocess_input used during training: [0,255] -> [-1,1].
+        arr = np.array(img, dtype=np.float32)
+        arr = (arr / 127.5) - 1.0
 
         # Add batch dimension
         return np.expand_dims(arr, axis=0)
